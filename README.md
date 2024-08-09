@@ -6,7 +6,6 @@ Global News is a mobile application that provides users with up-to-date global n
 Features:
 
 Splash Screen:
-
 A splash screen is displayed upon launching the app, enhancing the user interface experience.
 
 Home Screen:
@@ -25,6 +24,7 @@ Displays articles by category for the selected country, including "General," "Sp
 Users can tap on a category to view articles related to that category.
 
 List Display Features:
+
 Shimmer Effect: Displays a loading effect until data is fetched from the API.
 
 LazyLoader: Loads more data as the user scrolls to the end of the list.
