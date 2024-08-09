@@ -49,10 +49,21 @@ News API: For fetching global news articles.
 Usage Flow:
 The user opens the Global News app.
 The splash screen is displayed.
+![Screenshot_2024-08-09-22-32-44-247_com example global_news](https://github.com/user-attachments/assets/1c379a4e-6b87-4dde-a0b1-c47f642f8e26)
+
 The user is taken to the home screen, where top headlines and other news articles are displayed based on the default country.
+![Screenshot_2024-08-09-22-33-33-608_com example global_news](https://github.com/user-attachments/assets/a5fdb6be-c99b-4eb6-8ca4-329b81919996)
+
 The user can search for specific articles using the search feature.
 The user can select a different country to view news articles specific to that location.
+![Screenshot_2024-08-09-22-33-48-007_com example global_news](https://github.com/user-attachments/assets/04d47776-ab45-4cba-a3a8-c7ca1139d785)
+
 The user can navigate to the categories screen to view articles by category.
+![Screenshot_2024-08-09-22-33-41-668_com example global_news](https://github.com/user-attachments/assets/722e7bcf-f698-4d68-82ec-33ec44f3472c)
+
+The user can see more detail about article by clicking on the individual article and even in detail screen user can see more about article from browser by clicking on site url.
+![Screenshot_2024-08-09-22-33-57-182_com example global_news](https://github.com/user-attachments/assets/a005b1e9-8561-4f6b-aa11-87dba7ed3556)
+
 The user can refresh the data using the RefreshIndicator.
 
 Design Philosophy:
