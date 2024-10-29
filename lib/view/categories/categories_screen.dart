@@ -7,7 +7,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:lazy_load_scrollview/lazy_load_scrollview.dart';
 
-import '../../app_widgets/shimmer_headlines.dart';
+import '../../utils/app_widgets/shimmer_headlines.dart';
+
 
 class CategoriesScreen extends GetView<CategoriesController> {
   static const screenRouteName = '/categories_screen';

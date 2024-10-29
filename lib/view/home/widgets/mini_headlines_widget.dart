@@ -2,8 +2,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:get/get.dart';
-import 'package:global_news/app_widgets/image_load_error.dart';
 import 'package:global_news/controllers/home_controller.dart';
+import 'package:global_news/utils/app_widgets/message_widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../news_detail_screen.dart';
@@ -13,17 +13,13 @@ class MiniHeadlinesWidget extends StatelessWidget {
   final int index;
   final HomeController controller;
   const MiniHeadlinesWidget(
-      {Key? key,
+      {super.key,
       required this.dateAndTime,
       required this.index,
-      required this.controller})
-      : super(key: key);
+      required this.controller});
 
   @override
   Widget build(BuildContext context) {
-    final width = MediaQuery.sizeOf(context).width * 1;
-    final height = MediaQuery.sizeOf(context).height * 1;
-
     return InkWell(
       onTap: () {
         Map<String, String> newsLine = {'news': 'MiniHeadlines'};
@@ -46,13 +42,17 @@ class MiniHeadlinesWidget extends StatelessWidget {
           return MaterialRectCenterArcTween(begin: begin, end: end);
         },
         child: Container(
-          margin: const EdgeInsets.only(
-              top: 0.0, left: 10.0, right: 10.0, bottom: 16.0),
+          height: Get.height * .15,
+          width: Get.width,
+          margin: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
           decoration: BoxDecoration(
             color: Colors.deepPurple[50],
             borderRadius: BorderRadius.circular(16.0),
           ),
           child: Row(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(16.0),
@@ -61,8 +61,8 @@ class MiniHeadlinesWidget extends StatelessWidget {
                         .cntNewsData.value!.articles[index].urlToImage
                         .toString(),
                     fit: BoxFit.cover,
-                    height: height * .15,
-                    width: width * .25,
+                    height: Get.height * .15,
+                    width: Get.width * .28,
                     placeholder: (context, url) => const Center(
                           child: SpinKitCircle(
                             size: 50,
@@ -70,26 +70,28 @@ class MiniHeadlinesWidget extends StatelessWidget {
                           ),
                         ),
                     errorWidget: (context, url, error) =>
-                        ImageLoadError().imageError(textSize: 11.0)),
+                        MessageWidgets.imageError(textSize: 11.0)),
               ),
               Expanded(
-                child: Container(
-                  height: height * .15,
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 15.0, vertical: 10.0),
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
                   child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(
-                        controller.cntNewsData.value!.articles[index].title
-                            .toString(),
-                        maxLines: 3,
-                        overflow: TextOverflow.fade,
-                        style: GoogleFonts.poppins(
-                            fontSize: 14,
-                            color: Colors.black54,
-                            fontWeight: FontWeight.w700),
+                      Expanded(
+                        child: Text(
+                          controller.cntNewsData.value!.articles[index].title
+                              .toString(),
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.poppins(
+                              fontSize: 16,
+                              color: Colors.black54,
+                              fontWeight: FontWeight.w600),
+                        ),
                       ),
-                      const Spacer(),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [

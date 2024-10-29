@@ -1,10 +1,10 @@
 import 'package:get/get.dart';
 import 'package:global_news/models/categories_new_model.dart';
 import 'package:global_news/repository/news_repository.dart';
-import 'package:global_news/app_widgets/message_widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../exceptions/app_exception.dart';
+import '../utils/app_widgets/message_widgets.dart';
 
 class CategoriesController extends GetxController {
   var categoryShimmer = true.obs;

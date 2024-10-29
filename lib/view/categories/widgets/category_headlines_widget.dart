@@ -4,7 +4,7 @@ import 'package:get/get.dart';
 import 'package:global_news/controllers/categories_controller.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../../app_widgets/image_load_error.dart';
+import '../../../utils/app_widgets/message_widgets.dart';
 import '../../home/home_screen.dart';
 import '../../news_detail_screen.dart';
 
@@ -74,7 +74,7 @@ class _CategoryHeadlinesWidgetState extends State<CategoryHeadlinesWidget> {
                     width: width * .28,
                     placeholder: (context, url) => const Center(child: spinKit),
                     errorWidget: (context, url, error) =>
-                        ImageLoadError().imageError(textSize: 14)),
+                        MessageWidgets.imageError(textSize: 14)),
               ),
               Expanded(
                 child: Container(

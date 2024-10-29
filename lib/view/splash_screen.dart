@@ -6,7 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'home/home_screen.dart';
 
 class SplashScreen extends StatelessWidget {
-  const SplashScreen({Key? key}) : super(key: key);
+  const SplashScreen({super.key});
   static const screenRouteName = '/splash_screen';
 
   @override
@@ -22,6 +22,7 @@ class SplashScreen extends StatelessWidget {
         splashTransition: SplashTransition.fadeTransition,
         animationDuration: const Duration(seconds: 3),
         splashIconSize: height,
+        nextRoute: HomeScreen.screenRouteName,
         splash: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -35,7 +36,6 @@ class SplashScreen extends StatelessWidget {
             const SpinKitChasingDots(color: Colors.blue, size: 40),
           ],
         ),
-        nextRoute: HomeScreen.screenRouteName,
       ),
     );
   }
