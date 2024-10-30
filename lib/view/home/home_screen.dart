@@ -1,24 +1,84 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
+import 'package:global_news/controllers/location_controller.dart';
+import 'package:global_news/utils/app_widgets/message_widgets.dart';
 import 'package:global_news/view/home/widgets/headlines_widget.dart';
 import 'package:global_news/view/home/widgets/mini_headlines_widget.dart';
-import 'package:global_news/app_widgets/shimmer_headlines.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:lazy_load_scrollview/lazy_load_scrollview.dart';
 
 import '../../controllers/home_controller.dart';
+import '../../utils/app_widgets/shimmer_headlines.dart';
 import '../categories/categories_screen.dart';
 
-class HomeScreen extends GetView<HomeController> {
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
   static const screenRouteName = '/home_screen';
 
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
+  final ctrl = Get.find<LocationController>();
   final format = DateFormat('MMMM dd, yyyy');
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final HomeController controller = Get.find<HomeController>();
+  final ScrollController _verticalScroll = ScrollController();
+  final ScrollController _horizontalScroll = ScrollController();
 
-  HomeScreen({super.key});
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _verticalScroll.addListener(_onScroll);
+    _horizontalScroll.addListener(_onHScroll);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _verticalScroll.removeListener(_onScroll);
+    _verticalScroll.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_verticalScroll.position.atEdge) {
+      if (_verticalScroll.position.pixels ==
+          _verticalScroll.position.maxScrollExtent) {
+        controller
+            .endCountryNews(); // Call endCountryNews at the end of the list
+      }
+    }
+  }
+
+  void _onHScroll() {
+    if (_horizontalScroll.position.atEdge) {
+      if (_horizontalScroll.position.pixels ==
+          _horizontalScroll.position.maxScrollExtent) {
+        controller.endHeadlines();
+      }
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // Check location permission when app resumes
+      ctrl.getCurrentLocation().then((value) {
+        if (value.second == false) {
+          ctrl.statusPermission = value.first;
+          ctrl.setPermissionMsg();
+          ctrl.bottomSheet();
+        } else {
+          ctrl.saveLocation(value);
+        }
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,45 +105,7 @@ class HomeScreen extends GetView<HomeController> {
         preferredSize: const Size.fromHeight(55),
         child: Obx(
           () => (controller.isSearching.value)
-              ? AppBar(
-                  automaticallyImplyLeading: false,
-                  title: TextField(
-                    autofocus: true,
-                    decoration: const InputDecoration(
-                      hintText: 'Search...',
-                      enabledBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(
-                              color: Colors.black, style: BorderStyle.solid)),
-                      focusedBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(
-                              color: Colors.black, style: BorderStyle.solid)),
-                    ),
-                    onChanged: (value) {
-                      controller.setSearchText(value);
-                    },
-                    onSubmitted: (value) {
-                      if (value.isNotEmpty) {
-                        controller.performSearch();
-                      }
-                    },
-                  ),
-                  actions: [
-                    IconButton(
-                      icon: const Icon(Icons.close),
-                      color: Colors.black,
-                      onPressed: () {
-                        controller.toggleSearch();
-                        if (controller.searchText.value.isNotEmpty) {
-                          controller.searchText.value = '';
-                          controller.performSearch();
-                        }
-                      },
-                    ),
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width * 0.035,
-                    )
-                  ],
-                )
+              ? searchAppBar(ctrl: controller)
               : AppBar(
                   leading: IconButton(
                     onPressed: () {
@@ -96,9 +118,11 @@ class HomeScreen extends GetView<HomeController> {
                     ),
                   ),
                   title: Text(
-                    'News',
-                    style: GoogleFonts.poppins(
-                        fontSize: 24, fontWeight: FontWeight.w700),
+                    'Top 100 Headlines',
+                    style: GoogleFonts.almendra(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.deepPurple),
                   ),
                   centerTitle: true,
                   actions: [
@@ -119,191 +143,234 @@ class HomeScreen extends GetView<HomeController> {
                 ),
         ),
       ),
-      body: LazyLoadScrollView(
-        onEndOfPage: () {
-          controller.endCountryNews();
-        },
+      body: Center(
         child: RefreshIndicator(
           color: Colors.blue,
           onRefresh: () async {
             await controller.getCountryCode();
           },
           child: CustomScrollView(
+            controller: _verticalScroll,
+            shrinkWrap: true,
             slivers: [
               SliverToBoxAdapter(
+                // SliverToBoxAdapter plays a crucial role in creating precise and efficient scrolling experiences. It essentially helps to display a single box widget inside the CustomScrollView, making the widget capable of working with slivers. This enables a more flexible layout with the ability to mix multiple widgets with different scroll effects in a scrollable area.
                 child: Obx(() {
                   if (controller.headlineShimmer.value) {
                     return const ShimmerHeadlines("headlineShimmer");
                   } else if (controller.errorHeadline.value == true &&
                       controller.headlinesData.value == null) {
                     return SizedBox(
-                      height: MediaQuery.of(context).size.height * .5,
-                      child: const Center(
-                          child: Text('Failed to fetch Headlines News.')),
+                      height: Get.height * 0.35,
+                      child: MessageWidgets.errorContainer(
+                          height: 0.35,
+                          head: "Oups! Something went wrong",
+                          msg:
+                              "We encountered an error while fetching your data from server. please try again by refreshing your screen."),
                     );
                   } else if (controller.headlinesData.value != null &&
                       controller.headlinesData.value!.totalResults == 0) {
                     return SizedBox(
-                      height: MediaQuery.of(context).size.height * .4,
-                      width: MediaQuery.of(context).size.width,
-                      child: const Center(
-                        child: Text(
-                          "There are no top-headlines regarding your query",
-                          softWrap: true,
-                          style: TextStyle(fontSize: 14, color: Colors.blue),
-                        ),
-                      ),
+                      height: Get.height * 0.35,
+                      child: MessageWidgets.errorContainer(
+                          height: 0.35,
+                          head: "Oups! No Top- Headlines",
+                          msg:
+                              "We apologies for this inconvenience, we will make sure that we would add Top-Headlines related to this country."),
                     );
                   } else {
-                    return LazyLoadScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: SizedBox(
-                        height: MediaQuery.of(context).size.height * .5,
-                        child: ListView.builder(
-                          padding: EdgeInsets.zero,
-                          scrollDirection: Axis.horizontal,
-                          itemCount:
-                              controller.headlinesData.value!.articles.length +
-                                  (controller.headlinesMore.value ? 1 : 0),
-                          itemBuilder: (context, index) {
-                            if (index <
-                                controller
-                                    .headlinesData.value!.articles.length) {
-                              DateTime dateTime = DateTime.parse(controller
-                                  .headlinesData
-                                  .value!
-                                  .articles[index]
-                                  .publishedAt
-                                  .toString());
-                              if (controller.headlinesData.value!
-                                          .articles[index].author ==
-                                      null &&
-                                  controller.headlinesData.value!
-                                          .articles[index].title ==
-                                      "[Removed]") {
-                                return const SizedBox();
-                              } else {
-                                return HeadlinesWidget(
-                                  dateAndTime: format.format(dateTime),
-                                  index: index,
-                                  controller: controller,
-                                );
-                              }
-                            } else if (controller.errorHeadline.value &&
-                                controller.headlinesData.value != null) {
-                              return const Center(
-                                  child: Text('Error loading more articles.'));
-                            } else if (controller.errorHeadline.value ==
-                                    false &&
-                                controller.headlinesData.value != null &&
-                                controller.noMoreHeadlines.value == true) {
-                              return const Center(
-                                  child: Text('No more articles.'));
+                    return SizedBox(
+                      height: MediaQuery.of(context).size.height * .5,
+                      child: ListView.builder(
+                        controller: _horizontalScroll,
+                        padding: EdgeInsets.symmetric(horizontal: 16.0),
+                        scrollDirection: Axis.horizontal,
+                        itemCount:
+                            controller.headlinesData.value!.articles.length + 1,
+                        itemBuilder: (context, index) {
+                          if (index <
+                              controller.headlinesData.value!.articles.length) {
+                            DateTime dateTime = DateTime.parse(controller
+                                .headlinesData
+                                .value!
+                                .articles[index]
+                                .publishedAt
+                                .toString());
+                            if (controller.headlinesData.value!.articles[index]
+                                        .author ==
+                                    null &&
+                                controller.headlinesData.value!.articles[index]
+                                        .title ==
+                                    "[Removed]") {
+                              return const SizedBox();
                             } else {
-                              return const Center(
-                                child: SizedBox(
-                                  width: 100,
-                                  child: spinKit,
-                                ),
+                              return HeadlinesWidget(
+                                dateAndTime: format.format(dateTime),
+                                index: index,
+                                controller: controller,
                               );
                             }
-                          },
-                        ),
+                          } else if (controller.errorHeadline.value ||
+                              controller.headlinesData.value == null) {
+                            return Center(child: MessageWidgets.loadingError());
+                          } else if (controller.noMoreHeadNews.value) {
+                            return Center(
+                                child: SizedBox(
+                                    height: 50,
+                                    child:
+                                        MessageWidgets.showNoMoreArticles()));
+                          } else {
+                            return const Center(
+                              child: SizedBox(
+                                width: 100,
+                                child: spinKit,
+                              ),
+                            );
+                          }
+                        },
                       ),
-                      onEndOfPage: () {
-                        controller.endHeadlines();
-                      },
                     );
                   }
                 }),
               ),
-              const SliverToBoxAdapter(
-                child: SizedBox(height: 12.0),
-              ),
+              SliverToBoxAdapter(
+                  child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                child: Text("Country News for you",
+                    style: GoogleFonts.aclonica(
+                        color: Colors.deepPurpleAccent,
+                        fontWeight: FontWeight.w400,
+                        fontSize: 16)),
+              )),
               Obx(() {
-                return SliverList(
-                  delegate: SliverChildBuilderDelegate(
+                if (controller.countryShimmer.value) {
+                  return SliverToBoxAdapter(
+                      child: const ShimmerHeadlines("countryShimmer"));
+                } else if (controller.errorCountry.value == true &&
+                    controller.cntNewsData.value == null) {
+                  // we faced error while fetching data from API
+                  return SliverToBoxAdapter(
+                    child: SizedBox(
+                      height: Get.height * 0.35,
+                      child: MessageWidgets.errorContainer(
+                          height: 0.35,
+                          head: "Oups! Something went wrong",
+                          msg:
+                              "We encountered an error while fetching your data from server. please try again by refreshing your screen."),
+                    ),
+                  );
+                } else if (controller.cntNewsData.value != null &&
+                    controller.cntNewsData.value!.totalResults == 0) {
+                  // we don't have any news articles data related to country
+                  return SliverToBoxAdapter(
+                    child: SizedBox(
+                      height: Get.height * 0.35,
+                      child: MessageWidgets.errorContainer(
+                          height: 0.35,
+                          head: "Oups! No Country News",
+                          msg:
+                              "We apologies for this inconvenience, we will make sure that we would add news articles related to this country."),
+                    ),
+                  );
+                } else {
+                  return SliverList(
+                      delegate: SliverChildBuilderDelegate(
                     (context, index) {
-                      if (controller.countryShimmer.value) {
-                        return const ShimmerHeadlines("countryShimmer");
-                      } else if (controller.errorCountry.value == true &&
-                          controller.cntNewsData.value == null) {
-                        return SizedBox(
-                          height: MediaQuery.of(context).size.height * .5,
-                          child: const Center(
-                              child: Text('Failed to fetch Country News.')),
-                        );
-                      } else if (controller.cntNewsData.value != null &&
-                          controller.cntNewsData.value!.totalResults == 0) {
-                        return SizedBox(
-                          height: MediaQuery.of(context).size.height * .5,
-                          width: MediaQuery.of(context).size.width,
-                          child: const Center(
-                            child: Text(
-                              "There are no articles regarding your query",
-                              softWrap: true,
-                              style:
-                                  TextStyle(fontSize: 14, color: Colors.blue),
-                            ),
-                          ),
-                        );
-                      } else {
-                        if (index <
-                            controller.cntNewsData.value!.articles.length) {
-                          DateTime dateTime = DateTime.parse(controller
-                              .cntNewsData.value!.articles[index].publishedAt
-                              .toString());
-                          if (controller.cntNewsData.value!.articles[index]
-                                      .author ==
-                                  null &&
-                              controller.cntNewsData.value!.articles[index]
-                                      .title ==
-                                  "[Removed]") {
-                            return const SizedBox();
-                          } else {
-                            return MiniHeadlinesWidget(
-                              dateAndTime: format.format(dateTime),
-                              index: index,
-                              controller: controller,
-                            );
-                          }
-                        } else if (controller.errorCountry.value &&
-                            controller.cntNewsData.value != null) {
-                          return const Center(
-                              child: Text('Error loading more articles.'));
-                        } else if (controller.errorCountry.value == false &&
-                            controller.cntNewsData.value != null &&
-                            controller.noMoreCntNews.value == true) {
-                          return const Center(child: Text('No more articles.'));
+                      if (index <
+                          controller.cntNewsData.value!.articles.length) {
+                        DateTime dateTime = DateTime.parse(controller
+                            .cntNewsData.value!.articles[index].publishedAt
+                            .toString());
+                        if (controller.cntNewsData.value!.articles[index]
+                                    .author ==
+                                null &&
+                            controller
+                                    .cntNewsData.value!.articles[index].title ==
+                                "[Removed]") {
+                          return const SizedBox();
+                          // if there are any data that are removed but still does not remove from server properly we would nor display those data
                         } else {
-                          return const Center(
-                            child: SizedBox(
-                              width: 100,
-                              child: spinKit,
-                            ),
+                          return MiniHeadlinesWidget(
+                            dateAndTime: format.format(dateTime),
+                            index: index,
+                            controller: controller,
                           );
                         }
+                      } else if (controller.errorCountry.value ||
+                          controller.cntNewsData.value == null) {
+                        // this is the case when we try to fetching the more data from server than currently we have and get error
+                        return Center(
+                            child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: MessageWidgets.loadingError(),
+                        ));
+                      } else if (controller.noMoreCntNews.value == true) {
+                        return Center(
+                            child: SizedBox(
+                                width: 120,
+                                child: MessageWidgets.showNoMoreArticles()));
+                        // this is the case when we try to fetching the more data from server than currently we have and we already got full data from server than it will indicate that we don't have any more articles related to this country
+                      } else {
+                        // at last this case remain when we try to fetch more data than currently we have it will show spinner to indicate that more data is reloading
+                        return const Center(
+                          child: SizedBox(
+                            width: 100,
+                            child: spinKit,
+                          ),
+                        );
                       }
                     },
-                    childCount: controller.cntNewsData.value?.articles.length ??
-                        2 + (controller.cntNewsMore.value ? 1 : 0),
-                  ),
-                );
-              }),
-              SliverToBoxAdapter(
-                child: Obx(() {
-                  if (controller.permissionStatus.value != "Allow") {
-                    // Show modal bottom sheet if location is disabled
-                    Future.microtask(() => bottomSheetCard(
-                        context, controller.permissionStatus.value));
-                  }
-                  return const SizedBox();
-                }),
-              ),
+                    childCount:
+                        controller.cntNewsData.value!.articles.length + 1,
+                  ));
+                }
+              })
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget searchAppBar({required HomeController ctrl}) {
+    return AppBar(
+      automaticallyImplyLeading: false,
+      title: TextField(
+        autofocus: true,
+        decoration: const InputDecoration(
+          hintText: 'Search...',
+          enabledBorder: UnderlineInputBorder(
+              borderSide:
+                  BorderSide(color: Colors.black, style: BorderStyle.solid)),
+          focusedBorder: UnderlineInputBorder(
+              borderSide:
+                  BorderSide(color: Colors.black, style: BorderStyle.solid)),
+        ),
+        onChanged: (value) {
+          controller.setSearchText(value);
+        },
+        onSubmitted: (value) {
+          if (value.isNotEmpty) {
+            controller.performSearch();
+          }
+        },
+      ),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.close),
+          color: Colors.black,
+          onPressed: () {
+            controller.toggleSearch();
+            if (controller.searchText.value.isNotEmpty) {
+              controller.searchText.value = '';
+              controller.performSearch();
+            }
+          },
+        ),
+        SizedBox(
+          width: Get.width * 0.035,
+        )
+      ],
     );
   }
 }
@@ -312,92 +379,3 @@ const spinKit = SpinKitFadingCircle(
   color: Colors.cyan,
   size: 50,
 );
-
-void bottomSheetCard(BuildContext context, String value) {
-  late String msg;
-  if (HomeController().permissionStatus.value ==
-      "Location permission required") {
-    msg =
-        "This app needs location access to provide personalized services. Please enable location permissions.";
-  } else if (HomeController().permissionStatus.value ==
-      "Location permission permanently denied") {
-    msg =
-        "Please enable location permissions in the app settings to use this feature.";
-  } else {
-    msg =
-        "Enable your device location for a better delivery experience and refresh the screen";
-  }
-  showModalBottomSheet(
-    backgroundColor: Colors.white,
-    context: context,
-    builder: (BuildContext context) {
-      return Card(
-        elevation: 5,
-        shadowColor: Colors.grey[400],
-        color: Colors.white,
-        margin: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 16.0),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8.0),
-        ),
-        child: Container(
-          width: Get.width,
-          height: Get.height * .12,
-          margin: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 18.0),
-          child: SizedBox(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(
-                  Icons.location_off_rounded,
-                  color: Colors.red,
-                  size: Get.height * .04,
-                ),
-                const SizedBox(width: 12.0),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        value,
-                        style: const TextStyle(
-                            color: Colors.black, fontWeight: FontWeight.w600),
-                      ),
-                      const SizedBox(height: 2.0),
-                      Text(
-                        msg,
-                        softWrap: true,
-                        textAlign: TextAlign.start,
-                        style: const TextStyle(
-                            color: Colors.black45, fontWeight: FontWeight.w300),
-                      )
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8.0),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                      textStyle: const TextStyle(color: Colors.white),
-                      backgroundColor: Colors.red[500],
-                      shape: const RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.all(Radius.circular(12.0))),
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 2.0, horizontal: 12.0)),
-                  child: const Text(
-                    'Enable',
-                    style: TextStyle(
-                        color: Colors.white, fontWeight: FontWeight.w600),
-                  ),
-                  onPressed: () {
-                    Geolocator.openLocationSettings();
-                    Get.back();
-                  },
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-    },
-  );
-}

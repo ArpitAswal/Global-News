@@ -7,16 +7,18 @@ import '../exceptions/api_exception.dart';
 import '../exceptions/app_exception.dart';
 
 class NewsRepository {
+  final String _apiKey = "8ca987d0aff74f569c19d2094098f9b2";
+
   Future<dynamic> fetchCountryNews(String? query,
       {required String country, required int dataSize}) async {
     try {
       String newsUrl;
       if (query == null) {
         newsUrl =
-            "https://newsapi.org/v2/everything?apiKey=8ca987d0aff74f569c19d2094098f9b2&q=$country&pageSize=$dataSize";
+            "https://newsapi.org/v2/everything?apiKey=$_apiKey&q=$country&pageSize=$dataSize";
       } else {
         newsUrl =
-            'https://newsapi.org/v2/everything?q=("$query")&apiKey=8ca987d0aff74f569c19d2094098f9b2&pageSize=$dataSize';
+            'https://newsapi.org/v2/everything?q=($query)&apiKey=$_apiKey&pageSize=$dataSize';
       }
       final response = await http.get(Uri.parse(newsUrl));
       return returnResponse(response);
@@ -43,7 +45,7 @@ class NewsRepository {
       required int dataSize}) async {
     try {
       String newsUrl =
-          'https://newsapi.org/v2/everything?apiKey=8ca987d0aff74f569c19d2094098f9b2&pageSize=$dataSize&q=("$category" AND "$country")';
+          'https://newsapi.org/v2/everything?apiKey=$_apiKey&pageSize=$dataSize&q=("$category" AND "$country")';
       final response = await http.get(Uri.parse(newsUrl));
       return returnResponse(response);
     } on SocketException {
@@ -69,10 +71,10 @@ class NewsRepository {
       String url;
       if (query == null) {
         url =
-            "https://newsapi.org/v2/top-headlines?apiKey=8ca987d0aff74f569c19d2094098f9b2&country=$countryCode&pageSize=$dataSize";
+            "https://newsapi.org/v2/top-headlines?apiKey=$_apiKey&country=$countryCode&pageSize=$dataSize";
       } else {
         url =
-            'https://newsapi.org/v2/top-headlines?apiKey=8ca987d0aff74f569c19d2094098f9b2&pageSize=$dataSize&q=("$query")';
+            'https://newsapi.org/v2/top-headlines?apiKey=$_apiKey&pageSize=$dataSize&q=("$query")';
       }
       final response = await http.get(Uri.parse(url));
       return returnResponse(response);

@@ -1,13 +1,12 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:global_news/app_widgets/message_widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../app_widgets/image_load_error.dart';
 import '../models/articles_model.dart';
+import '../utils/app_widgets/message_widgets.dart';
 import 'categories/categories_screen.dart';
 
 class NewsDetailScreen extends StatefulWidget {
@@ -62,7 +61,7 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
                   filterQuality: FilterQuality.high,
                   placeholder: (context, url) => const Center(child: spinKit),
                   errorWidget: (context, url, error) =>
-                      ImageLoadError().imageError(textSize: 14)),
+                      MessageWidgets.imageError(textSize: 14)),
             ),
           ),
           Container(

@@ -2,11 +2,12 @@
 import 'package:get/get.dart';
 
 import '../controllers/home_controller.dart';
+import '../controllers/location_controller.dart';
 
 class HomeBinding extends Bindings{
   @override
   void dependencies() {
-    // TODO: implement dependencies
+    Get.put(LocationController());
     Get.lazyPut(() => HomeController());
   }
 }

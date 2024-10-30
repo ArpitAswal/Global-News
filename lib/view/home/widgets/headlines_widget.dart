@@ -1,8 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:global_news/app_widgets/image_load_error.dart';
 import 'package:global_news/controllers/home_controller.dart';
+import 'package:global_news/utils/app_widgets/message_widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../news_detail_screen.dart';
@@ -13,11 +13,10 @@ class HeadlinesWidget extends StatelessWidget {
   final int index;
   final HomeController controller;
   const HeadlinesWidget(
-      {Key? key,
+      {super.key,
       required this.dateAndTime,
       required this.index,
-      required this.controller})
-      : super(key: key);
+      required this.controller});
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +48,7 @@ class HeadlinesWidget extends StatelessWidget {
             height: height * .4,
             width: width * .75,
             padding: EdgeInsets.zero,
-            margin: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
+            margin: const EdgeInsets.symmetric(vertical: 5.0),
             child: Stack(
               alignment: Alignment.topCenter,
               children: [
@@ -59,10 +58,10 @@ class HeadlinesWidget extends StatelessWidget {
                   margin: const EdgeInsets.all(10.0),
                   decoration: BoxDecoration(
                     color: Colors.grey[200],
-                    borderRadius: BorderRadius.circular(12.0),
+                    borderRadius: BorderRadius.circular(16.0),
                   ),
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12.0),
+                    borderRadius: BorderRadius.circular(16.0),
                     child: CachedNetworkImage(
                         fit: BoxFit.cover,
                         imageUrl: controller.headlinesData.value!
@@ -72,7 +71,7 @@ class HeadlinesWidget extends StatelessWidget {
                               child: spinKit,
                             ),
                         errorWidget: (context, url, error) =>
-                            ImageLoadError().imageError()),
+                            MessageWidgets.imageError()),
                   ),
                 ),
                 Positioned(
@@ -86,21 +85,26 @@ class HeadlinesWidget extends StatelessWidget {
                       alignment: Alignment.bottomCenter,
                       height: height * .18,
                       width: width * .7,
-                      padding: const EdgeInsets.all(12.0),
+                      padding: const EdgeInsets.all(16.0),
                       child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment: MainAxisAlignment.start,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          Text(
-                            controller.headlinesData.value!.articles[index]
-                                    .title ??
-                                '',
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.poppins(
-                                fontSize: 17, fontWeight: FontWeight.w700),
+                          Expanded(
+                            child: Text(
+                              controller.headlinesData.value!.articles[index]
+                                      .title ??
+                                  '',
+                              softWrap: true,
+                              textAlign: TextAlign.start,
+                              maxLines: 3,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.poppins(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.black54),
+                            ),
                           ),
-                          const Spacer(),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -109,21 +113,16 @@ class HeadlinesWidget extends StatelessWidget {
                                   controller.headlinesData.value!
                                           .articles[index].source!.name ??
                                       '',
-                                  maxLines: 1,
-                                  overflow: TextOverflow.fade,
+                                  overflow: TextOverflow.ellipsis,
                                   style: GoogleFonts.poppins(
-                                      fontSize: 13,
+                                      fontSize: 12,
                                       fontWeight: FontWeight.w600),
                                 ),
                               ),
-                              Padding(
-                                padding: const EdgeInsets.only(left: 26.0),
-                                child: Text(
-                                  dateAndTime,
-                                  style: GoogleFonts.poppins(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w500),
-                                ),
+                              Text(
+                                dateAndTime,
+                                style: GoogleFonts.poppins(
+                                    fontSize: 12, fontWeight: FontWeight.w500),
                               )
                             ],
                           )
