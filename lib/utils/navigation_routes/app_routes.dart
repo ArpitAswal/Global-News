@@ -1,5 +1,4 @@
 import 'package:get/get.dart';
-import 'package:global_news/view/news_detail_screen.dart';
 
 import '../../bindings/categories_binding.dart';
 import '../../bindings/home_binding.dart';
@@ -23,9 +22,5 @@ class AppRoutes {
         page: () => CategoriesScreen(),
         binding: CategoriesBinding(),
         transition: Transition.leftToRight),
-    GetPage(
-        name: NewsDetailScreen.screenRouteName,
-        page: () => const NewsDetailScreen(),
-        transition: Transition.zoom)
   ];
 }

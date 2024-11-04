@@ -4,7 +4,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class MessageWidgets {
-  static void toast(String msg) {
+  static void toast(String msg, {required ToastGravity gravity}) {
     Fluttertoast.showToast(
         msg: msg,
         toastLength: Toast.LENGTH_SHORT,

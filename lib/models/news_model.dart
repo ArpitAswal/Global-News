@@ -1,13 +1,13 @@
 import 'articles_model.dart';
 
-class CountryNewsModel {
+class NewsModel {
   String? status;
   int? totalResults;
   late List<Articles> articles;
 
-  CountryNewsModel({this.status, this.totalResults, required this.articles});
+  NewsModel({this.status, this.totalResults, required this.articles});
 
-  CountryNewsModel.fromJson(Map<String, dynamic> json) {
+  NewsModel.fromJson(Map<String, dynamic> json) {
     status = json['status'];
     totalResults = json['totalResults'];
     if (json['articles'] != null) {
@@ -26,4 +26,3 @@ class CountryNewsModel {
     return data;
   }
 }
-
