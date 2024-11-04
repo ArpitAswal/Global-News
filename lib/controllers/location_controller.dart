@@ -39,7 +39,9 @@ class LocationController extends GetxController {
     Get.bottomSheet(
         elevation: 8.0,
         ignoreSafeArea: true,
-        persistent: false,
+        persistent: true,
+        isDismissible: false,
+        enableDrag: false,
         LocationAlert());
   }
 
