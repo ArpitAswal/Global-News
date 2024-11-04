@@ -6,7 +6,6 @@ import '../controllers/categories_controller.dart';
 class CategoriesBinding extends Bindings{
   @override
   void dependencies() {
-    // TODO: implement dependencies
-    Get.lazyPut(()=> CategoriesController());
+    Get.put(CategoriesController(), permanent: true);
   }
 }

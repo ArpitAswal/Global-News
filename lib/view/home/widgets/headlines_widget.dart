@@ -1,7 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:global_news/controllers/home_controller.dart';
+import 'package:global_news/utils/animation/custom_recttween.dart';
 import 'package:global_news/utils/app_widgets/message_widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -25,24 +25,16 @@ class HeadlinesWidget extends StatelessWidget {
 
     return InkWell(
       onTap: () {
-        Map<String, String> newsLine = {'news': 'Headlines'};
-        Get.toNamed(NewsDetailScreen.screenRouteName,
-            arguments: [controller.headlinesData.value!.articles[index], index],
-            parameters: newsLine);
+        Navigator.push(context, PageRouteBuilder(
+            transitionDuration: Duration(milliseconds: 600),
+            reverseTransitionDuration: Duration(milliseconds: 600),
+            pageBuilder: (_, __, ___) => NewsDetailScreen(article: controller.headlinesData.value!.articles[index], newsType: "Headlines", index: index,)));
       },
       child: Hero(
-        tag:
-            "Headlines: ${controller.headlinesData.value!.articles[index].urlToImage ?? 'index $index is null'}",
+        tag: "${controller.headlinesData.value!.articles[index].title},$index",
         transitionOnUserGestures: true,
-        flightShuttleBuilder:
-            (flightContext, animation, direction, fromContext, toContext) {
-          return const Icon(
-            Icons.image_rounded,
-            size: 150.0,
-          );
-        },
         createRectTween: (Rect? begin, Rect? end) {
-          return MaterialRectCenterArcTween(begin: begin, end: end);
+          return CustomRectTween(begin: begin, end: end);
         },
         child: Container(
             height: height * .4,

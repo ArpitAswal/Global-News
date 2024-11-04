@@ -1,15 +1,15 @@
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:global_news/exceptions/app_exception.dart';
 import 'package:global_news/repository/news_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../models/country_news_model.dart';
-import '../models/headlines_model.dart';
+import '../models/news_model.dart';
 import '../utils/app_widgets/message_widgets.dart';
 
 class HomeController extends GetxController {
-  final headlinesData = Rxn<HeadlinesModel>();
-  final cntNewsData = Rxn<CountryNewsModel>();
+  final headlinesData = Rxn<NewsModel>();
+  final cntNewsData = Rxn<NewsModel>();
   final _repository = NewsRepository();
 
   var headlineShimmer = true
@@ -21,9 +21,6 @@ class HomeController extends GetxController {
   var noMoreHeadNews =
       false.obs; // to indicate that headlines news data are more
   var noMoreCntNews = false.obs; // to indicate that country news data are more
-  var isSearching =
-      false.obs; // to indicate that user searching something or not
-  var searchText = ''.obs;
 
   var headlinesSize =
       6; // this is default value of headlines news data that can display at current time
@@ -32,10 +29,8 @@ class HomeController extends GetxController {
 
   late RxString selectedCountry = ''.obs;
   late RxString cntCode = ''.obs;
-  //late final map;
 
   final List<String> countryNames = [
-    "United Arab Emirates",
     "Argentina",
     "Austria",
     "Australia",
@@ -43,56 +38,56 @@ class HomeController extends GetxController {
     "Bulgaria",
     "Brazil",
     "Canada",
-    "Switzerland",
     "China",
     "Colombia",
     "Cuba",
     "Czech Republic",
-    "Germany",
     "Egypt",
     "France",
-    "United Kingdom",
+    "Germany",
     "Greece",
     "Hong Kong",
     "Hungary",
+    "India",
     "Indonesia",
     "Ireland",
     "Israel",
-    "India",
     "Italy",
     "Japan",
-    "South Korea",
-    "Lithuania",
     "Latvia",
-    "Morocco",
-    "Mexico",
+    "Lithuania",
     "Malaysia",
-    "Nigeria",
+    "Mexico",
+    "Morocco",
     "Netherlands",
-    "Norway",
     "New Zealand",
+    "Nigeria",
+    "Norway",
     "Philippines",
     "Poland",
     "Portugal",
     "Romania",
-    "Serbia",
     "Russia",
     "Saudi Arabia",
-    "Sweden",
+    "Serbia",
     "Singapore",
-    "Slovenia",
     "Slovakia",
+    "Slovenia",
+    "South Africa",
+    "South Korea",
+    "Sweden",
+    "Switzerland",
+    "Taiwan",
     "Thailand",
     "Turkey",
-    "Taiwan",
     "Ukraine",
+    "United Arab Emirates",
+    "United Kingdom",
     "United States",
-    "Venezuela",
-    "South Africa"
+    "Venezuela"
   ];
 
   final List<String> countryCodes = [
-    "ae",
     "ar",
     "at",
     "au",
@@ -100,53 +95,59 @@ class HomeController extends GetxController {
     "bg",
     "br",
     "ca",
-    "ch",
     "cn",
     "co",
     "cu",
     "cz",
-    "de",
     "eg",
     "fr",
-    "gb",
+    "de",
     "gr",
     "hk",
     "hu",
+    "in",
     "id",
     "ie",
     "il",
-    "in",
     "it",
     "jp",
-    "kr",
-    "lt",
     "lv",
-    "ma",
-    "mx",
+    "lt",
     "my",
-    "n",
+    "mx",
+    "ma",
     "nl",
-    "no",
     "nz",
+    "ng",
+    "no",
     "ph",
     "pl",
     "pt",
     "ro",
-    "rs",
     "ru",
     "sa",
-    "se",
+    "rs",
     "sg",
-    "si",
     "sk",
+    "si",
+    "za",
+    "kr",
+    "se",
+    "ch",
+    "tw",
     "th",
     "tr",
-    "tw",
     "ua",
+    "ae",
+    "gb",
     "us",
     "ve",
-    "za"
   ];
+
+  void callHomeAPI(){
+    fetchNews( load: false, code: cntCode.value);
+    getCountryNews(load: false, country: selectedCountry.value);
+  }
 
   void endCountryNews() {
     if (cntNewsSize + 20 > 100) {
@@ -156,9 +157,6 @@ class HomeController extends GetxController {
       noMoreCntNews(false);
       cntNewsSize += 20;
       getCountryNews(
-          (isSearching.value && searchText.value.isNotEmpty)
-              ? searchText.value
-              : null,
           load: true,
           country: selectedCountry.value);
     }
@@ -172,27 +170,24 @@ class HomeController extends GetxController {
       noMoreHeadNews(false);
       headlinesSize += 20;
       fetchNews(
-          (isSearching.value && searchText.value.isNotEmpty)
-              ? searchText.value
-              : null,
           load: true,
           code: cntCode.value);
     }
   }
 
-  Future<void> fetchNews(String? query,
+  Future<void> fetchNews(
       {required bool load, required String code}) async {
     try {
       headlineShimmer(!load);
       errorHeadline(false);
-      var map = await _repository.fetchCountryTopHeadlines(query,
-          countryCode: 'us', dataSize: headlinesSize);
-      var response = HeadlinesModel.fromJson(map);
+      var map = await _repository.fetchCountryTopHeadlines(
+          countryCode: code, dataSize: headlinesSize);
+      var response = NewsModel.fromJson(map);
       if (response.status == "ok") {
         headlinesData.value = response;
       } else {
         errorHeadline(true);
-        MessageWidgets.toast(response.status.toString());
+        MessageWidgets.toast(response.status.toString(), gravity: ToastGravity.CENTER);
       }
     } on AppException catch (e) {
       errorHeadline(true);
@@ -206,19 +201,19 @@ class HomeController extends GetxController {
     // here what we do is whenever we fetch data from API, UI will display shimmer effect until data is fetched. in case we get some error it will set the error headlines to true that will indicate that we faced some error while fetching data from server. also it make sure that headlines more set to false no matter what either data is fetched or not to indicate that currently we don't have any more news.
   }
 
-  Future<void> getCountryNews(String? query,
+  Future<void> getCountryNews(
       {required bool load, required String country}) async {
     try {
       countryShimmer(!load);
       errorCountry(false);
-      var map = await _repository.fetchCountryNews(query,
+      var map = await _repository.fetchCountryNews(
           country: country, dataSize: cntNewsSize);
-      var response = CountryNewsModel.fromJson(map);
+      var response = NewsModel.fromJson(map);
       if (response.status == "ok") {
         cntNewsData.value = response;
       } else {
         errorCountry(true);
-        MessageWidgets.toast(response.status.toString());
+        MessageWidgets.toast(response.status.toString(), gravity: ToastGravity.CENTER);
       }
     } on AppException catch (e) {
       errorCountry(true);
@@ -238,50 +233,21 @@ class HomeController extends GetxController {
       selectedCountry.value = prefs.getString("CountryName") ?? "";
       cntCode.value = prefs.getString("CountryCode") ?? "";
       if (selectedCountry.value.isNotEmpty && cntCode.value.isNotEmpty) {
-        Future.wait([
-          fetchNews(null, load: false, code: cntCode.value),
-          getCountryNews(null, load: false, country: selectedCountry.value)
-        ]);
+        callHomeAPI();
       }
     } catch (e) {
       MessageWidgets.showSnackBar(e.toString());
     }
   }
 
-  void performSearch() {
-    fetchNews((searchText.value.isEmpty) ? null : searchText.value,
-        load: false, code: cntCode.value);
-    getCountryNews((searchText.value.isEmpty) ? null : searchText.value,
-        load: false, country: selectedCountry.value);
-  }
-
-  void setSearchText(String text) {
-    searchText.value = text;
-  }
-
-  void setSelectedCountry(String country, int index) async {
+  void setSelectedCountry(String country) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     headlinesSize = 20;
     cntNewsSize = 20;
     selectedCountry.value = country;
-    cntCode.value = countryCodes[index];
+    cntCode.value = countryCodes[countryNames.indexOf(country)];
     prefs.setString("CountryName", selectedCountry.value);
     prefs.setString("CountryCode", cntCode.value);
-    fetchNews(
-        (isSearching.value && searchText.value.isNotEmpty)
-            ? searchText.value
-            : null,
-        load: false,
-        code: cntCode.value);
-    getCountryNews(
-        (isSearching.value && searchText.value.isNotEmpty)
-            ? searchText.value
-            : null,
-        load: false,
-        country: selectedCountry.value);
-  }
-
-  void toggleSearch() {
-    isSearching.value = !isSearching.value;
+    callHomeAPI();
   }
 }

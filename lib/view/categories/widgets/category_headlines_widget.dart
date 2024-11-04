@@ -1,9 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:global_news/controllers/categories_controller.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../../utils/animation/custom_recttween.dart';
 import '../../../utils/app_widgets/message_widgets.dart';
 import '../../home/home_screen.dart';
 import '../../news_detail_screen.dart';
@@ -32,25 +32,17 @@ class _CategoryHeadlinesWidgetState extends State<CategoryHeadlinesWidget> {
 
     return InkWell(
       onTap: () {
-        Map<String, String> newsLine = {'news': 'CategoryHeadlines'};
-        Get.toNamed(NewsDetailScreen.screenRouteName,
-            arguments:
-                widget.controller.categoriesData.value!.articles[widget.index],
-            parameters: newsLine);
+        Navigator.push(context, PageRouteBuilder(
+            transitionDuration: Duration(milliseconds: 600),
+            reverseTransitionDuration: Duration(milliseconds: 600),
+            pageBuilder: (_, __, ___) => NewsDetailScreen(article:
+            widget.controller.categoriesData.value!.articles[widget.index], newsType: "CategoryHeadlines", index: widget.index,)));
       },
       child: Hero(
-        tag:
-            "CategoryHeadlines: ${widget.controller.categoriesData.value!.articles[widget.index].urlToImage ?? 'index ${widget.index} is null'}",
+        tag: "${widget.controller.categoriesData.value!.articles[widget.index].title},${widget.index}",
         transitionOnUserGestures: true,
-        flightShuttleBuilder:
-            (flightContext, animation, direction, fromContext, toContext) {
-          return const Icon(
-            Icons.image_rounded,
-            size: 150.0,
-          );
-        },
         createRectTween: (Rect? begin, Rect? end) {
-          return MaterialRectCenterArcTween(begin: begin, end: end);
+          return CustomRectTween(begin: begin, end: end);
         },
         child: Container(
           height: height * .16,

@@ -26,7 +26,7 @@ class LocationController extends GetxController {
     super.onInit();
     getCurrentLocation().then((value) {
       if (value.second != false) {
-        saveLocation(value);
+        isNewLocation(value);
       } else {
         statusPermission = value.first;
         setPermissionMsg();
@@ -117,7 +117,15 @@ class LocationController extends GetxController {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString("CountryName", value.first);
     prefs.setString("CountryCode", value.second);
-    if (value.second != false) {
+    Get.find<HomeController>().getCountryCode();
+  }
+
+  void isNewLocation(Pair value) async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    if(value.first != prefs.getString("CountryName") ||
+     value.second != prefs.getString("CountryCode")){
+      saveLocation(value);
+    } else{
       Get.find<HomeController>().getCountryCode();
     }
   }

@@ -19,7 +19,6 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
             primarySwatch: Colors.blue,
-            scaffoldBackgroundColor: Colors.white,
             colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple)),
         initialRoute: '/splash_screen',
         getPages: AppRoutes.routes);

@@ -1,6 +1,10 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/material.dart';
+import 'package:global_news/models/chat_model.dart';
+import 'package:global_news/models/chat_response_model.dart';
 import 'package:http/http.dart' as http;
 
 import '../exceptions/api_exception.dart';
@@ -8,18 +12,59 @@ import '../exceptions/app_exception.dart';
 
 class NewsRepository {
   final String _apiKey = "8ca987d0aff74f569c19d2094098f9b2";
+  final String _geminiAPIKey = "AIzaSyBYplFVmDHsQo9UiXvV10jyL5hluvDtgwI";
 
-  Future<dynamic> fetchCountryNews(String? query,
-      {required String country, required int dataSize}) async {
+  Future<ChatResponseModel?> geminiAPI({required List<Contents> messages}) async {
+    final String apiUrl =
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$_geminiAPIKey';
+
     try {
-      String newsUrl;
-      if (query == null) {
-        newsUrl =
-            "https://newsapi.org/v2/everything?apiKey=$_apiKey&q=$country&pageSize=$dataSize";
+      // Build the payload
+      final res = await http.post(
+        Uri.parse(apiUrl),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'contents': messages.map((e) => e.toJson()).toList(),
+          'generationConfig': {
+            'temperature': 0.5,
+            'topK': 40,
+            'topP': 1.0,
+            'maxOutputTokens': 5026,
+            'responseMimeType': 'text/plain',
+          },
+        }),
+      );
+
+      // Check if the request was successful
+      if (res.statusCode == 200) {
+        final responseData = jsonDecode(res.body);
+        return ChatResponseModel.fromJson(responseData);
       } else {
-        newsUrl =
-            'https://newsapi.org/v2/everything?q=($query)&apiKey=$_apiKey&pageSize=$dataSize';
+        debugPrint('Error: ${res.statusCode} - ${res.reasonPhrase}');
+        return null;
       }
+    } on SocketException {
+      throw AppException(
+          message: 'No Internet connection', type: ExceptionType.internet);
+    } on HttpException {
+      throw AppException(
+          message: "Couldn't find the data", type: ExceptionType.http);
+    } on FormatException {
+      throw AppException(
+          message: "Bad response format", type: ExceptionType.format);
+    } on TimeoutException catch (_) {
+      throw AppException(
+        message: 'Connection timed out',
+        type: ExceptionType.timeout,
+      );
+    }
+  }
+
+
+  Future<dynamic> fetchCountryNews({required String country, required int dataSize}) async {
+    try {
+      String newsUrl =
+            "https://newsapi.org/v2/everything?apiKey=$_apiKey&q=$country&pageSize=$dataSize";
       final response = await http.get(Uri.parse(newsUrl));
       return returnResponse(response);
     } on SocketException {
@@ -65,17 +110,33 @@ class NewsRepository {
     }
   }
 
-  Future<dynamic> fetchCountryTopHeadlines(String? query,
-      {required String countryCode, required int dataSize}) async {
+  Future<dynamic> fetchCountryTopHeadlines( {required String countryCode, required int dataSize}) async {
     try {
-      String url;
-      if (query == null) {
-        url =
+      String url =
             "https://newsapi.org/v2/top-headlines?apiKey=$_apiKey&country=$countryCode&pageSize=$dataSize";
-      } else {
-        url =
-            'https://newsapi.org/v2/top-headlines?apiKey=$_apiKey&pageSize=$dataSize&q=("$query")';
-      }
+      final response = await http.get(Uri.parse(url));
+      return returnResponse(response);
+    } on SocketException {
+      throw AppException(
+          message: 'No Internet connection', type: ExceptionType.internet);
+    } on HttpException {
+      throw AppException(
+          message: "Couldn't find the data", type: ExceptionType.http);
+    } on FormatException {
+      throw AppException(
+          message: "Bad response format", type: ExceptionType.format);
+    } on TimeoutException catch (_) {
+      throw AppException(
+        message: 'Connection timed out',
+        type: ExceptionType.timeout,
+      );
+    }
+  }
+
+  Future<dynamic> searchQueryNews({required String q, required int size}) async{
+    try {
+      String url =
+          "https://newsapi.org/v2/everything?apiKey=$_apiKey&q=$q&pageSize=$size";
       final response = await http.get(Uri.parse(url));
       return returnResponse(response);
     } on SocketException {

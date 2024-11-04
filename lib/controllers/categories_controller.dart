@@ -1,3 +1,4 @@
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:global_news/models/categories_new_model.dart';
 import 'package:global_news/repository/news_repository.dart';
@@ -10,13 +11,12 @@ class CategoriesController extends GetxController {
   var categoryShimmer = true.obs;
   var errorCategory = false.obs;
   var noMoreCatNews = false.obs;
-  var moreCatNews = false.obs;
   var scrolled = false.obs;
   var categoriesData = Rxn<CategoriesNewsModel>();
   var selectedCategory = 'General'.obs;
   var previousCategory = 'General'.obs;
 
-  var categoryNewsSize = 10;
+  var categoryNewsSize = 20;
 
   List<String> categoriesList = [
     'General',
@@ -34,17 +34,12 @@ class CategoriesController extends GetxController {
   }
 
   void endCategoryNews() {
-    categoryNewsSize = categoriesData.value!.articles.length + 10;
-    moreCatNews(true);
-    if (categoryNewsSize >
-        ((categoriesData.value!.totalResults! > 100)
-            ? 100
-            : categoriesData.value!.totalResults!)) {
+    if(categoryNewsSize + 20 > 100){
       noMoreCatNews(true);
-      categoryNewsSize = (categoriesData.value!.totalResults! > 100)
-          ? 100
-          : categoriesData.value!.totalResults!;
-    } else {
+      categoryNewsSize = 100;
+    }
+    else {
+      categoryNewsSize += 20;
       noMoreCatNews(false);
       fetchCategoryCountryNews(category: selectedCategory.value, load: true);
     }
@@ -57,23 +52,21 @@ class CategoriesController extends GetxController {
       var cntName = prefs.getString("CountryName") ?? "";
       categoryShimmer(!load);
       errorCategory(false);
-
+      if (selectedCategory.value != previousCategory.value) {
+        previousCategory.value = selectedCategory.value;
+        categoryNewsSize = 20;
+      }
       var map = await NewsRepository().fetchCategoryCountryBased(
           category: category.toLowerCase(),
           country: cntName,
-          dataSize: (previousCategory.value != selectedCategory.value)
-              ? 10
-              : categoryNewsSize);
+          dataSize: categoryNewsSize);
       var response = CategoriesNewsModel.fromJson(map);
 
       if (response.status == 'ok') {
         categoriesData.value = response;
-        if (selectedCategory.value != previousCategory.value) {
-          previousCategory.value = selectedCategory.value;
-        }
       } else {
         errorCategory(true);
-        MessageWidgets.toast(response.status.toString());
+        MessageWidgets.toast(response.status.toString(), gravity: ToastGravity.CENTER);
       }
     } on AppException catch (e) {
       errorCategory(true);
@@ -83,7 +76,6 @@ class CategoriesController extends GetxController {
       MessageWidgets.showSnackBar(e.toString());
     } finally {
       categoryShimmer(false);
-      moreCatNews(false);
     }
   }
 }
