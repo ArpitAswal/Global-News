@@ -3,10 +3,9 @@ Description:
 
 Global News is a dynamic mobile application built using Flutter and Dart, designed to keep users informed with up-to-date global news articles. The app fetches news articles using an API and displays them based on the user's location and preferences. With a focus on user-friendly design and seamless experience, Global News ensures that users have easy access to the latest news from around the world. The app features a splash screen that transitions smoothly into the Home screen, where users are presented with top headlines and other news stories based on their country, automatically determined by the device location.
 
-Click on Image to download apk file of this project:
-
-[![Download APK](![ic_launcher](https://github.com/user-attachments/assets/70b39065-08ba-4d7d-87a0-c1735dedbc2f)
-)](https://github.com/ArpitAswal/Global-News/releases/download/1.0.0/GlobalNews.apk)
+<p>Click on the GlobalNews logo to download the apk file:<p> 
+  
+<a href="https://github.com/ArpitAswal/Global-News/releases/download/1.0.0/GlobalNews.apk"> ![ic_launcher](https://github.com/user-attachments/assets/114d981d-013a-41ea-b7cd-a112c691e804)</a>
 
 Features:
 
