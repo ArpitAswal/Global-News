@@ -153,7 +153,7 @@ class HomeController extends GetxController {
     if (cntNewsSize + 20 > 100) {
       cntNewsSize = 100;
       noMoreCntNews(true);
-    } else {
+    } else if(!countryShimmer.value){
       noMoreCntNews(false);
       cntNewsSize += 20;
       getCountryNews(
@@ -166,7 +166,7 @@ class HomeController extends GetxController {
     if (headlinesSize + 20 > 100) {
       headlinesSize = 100;
       noMoreHeadNews(true);
-    } else {
+    } else if(!headlineShimmer.value){
       noMoreHeadNews(false);
       headlinesSize += 20;
       fetchNews(

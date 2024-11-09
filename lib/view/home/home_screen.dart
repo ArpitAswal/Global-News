@@ -91,12 +91,14 @@ class _HomeScreenState extends State<HomeScreen>
     if (state == AppLifecycleState.resumed) {
       // Check location permission when app resumes
       ctrl.getCurrentLocation().then((value) {
-        if (value.second == false) {
+        if(value.second is String){
+          ctrl.isNewLocation(value);
+        } else if (value.second == false) {
           ctrl.statusPermission = value.first;
           ctrl.setPermissionMsg();
           ctrl.bottomSheet();
         } else {
-          ctrl.isNewLocation(value);
+          MessageWidgets.showSnackBar(value.first);
         }
       });
     }

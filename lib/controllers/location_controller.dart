@@ -6,6 +6,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:global_news/controllers/home_controller.dart';
 import 'package:global_news/utils/app_widgets/location_alert.dart';
+import 'package:global_news/utils/app_widgets/message_widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LocationController extends GetxController {
@@ -25,12 +26,14 @@ class LocationController extends GetxController {
   void onInit() {
     super.onInit();
     getCurrentLocation().then((value) {
-      if (value.second != false) {
+      if (value.second is String) {
         isNewLocation(value);
-      } else {
+      } else if(value.second == false){
         statusPermission = value.first;
         setPermissionMsg();
         bottomSheet();
+      } else{
+        MessageWidgets.showSnackBar(value.first);
       }
     });
   }
@@ -70,21 +73,29 @@ class LocationController extends GetxController {
     if (_permission == LocationPermission.whileInUse ||
         _permission == LocationPermission.always) {
       // Get the current location
-      Position position = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.high);
+      try {
+        // Adding a timeout to prevent hanging if there's no response
+        Position position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high,
+        ).timeout(Duration(seconds: 10), onTimeout: () {
+          throw TimeoutException("Location request timed out");
+        });
+        // Get the address from coordinates
+        List<Placemark> deviceLocation =
+        await placemarkFromCoordinates(position.latitude, position.longitude);
 
-      // Get the address from coordinates
-      List<Placemark> deviceLocation =
-          await placemarkFromCoordinates(position.latitude, position.longitude);
-
-      if (deviceLocation.isNotEmpty) {
-        Placemark placeMark = deviceLocation.first;
-        Pair pairValue =
-            Pair(placeMark.country.toString(), placeMark.isoCountryCode);
-        return pairValue;
+        if (deviceLocation.isNotEmpty) {
+          Placemark placeMark = deviceLocation.first;
+          Pair pairValue =
+          Pair(placeMark.country.toString(), placeMark.isoCountryCode);
+          return pairValue;
+        }
+      } catch (e) {
+        // Handle timeout or other exceptions from getting position
+        return Pair("Failed to retrieve location, check your network connection and refresh the screen", true);
       }
     }
-    return Pair("", false);
+    return Pair("Internal Location Error", true);
   }
 
   void getLatLong() {
