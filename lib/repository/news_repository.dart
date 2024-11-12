@@ -11,8 +11,8 @@ import '../exceptions/api_exception.dart';
 import '../exceptions/app_exception.dart';
 
 class NewsRepository {
-  final String _apiKey = "8ca987d0aff74f569c19d2094098f9b2";
-  final String _geminiAPIKey = "AIzaSyBYplFVmDHsQo9UiXvV10jyL5hluvDtgwI";
+  final String _apiKey = "news_api_key";
+  final String _geminiAPIKey = "gemini_account_api_key";
 
   Future<ChatResponseModel?> geminiAPI({required List<Contents> messages}) async {
     final String apiUrl =
