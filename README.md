@@ -1,8 +1,8 @@
 ## App Logo
 
-Click on logo to download the latest version of app apk file:<p> 
-  
-  <a href="https://github.com/ArpitAswal/Global-News/releases/download/1.0.0/GlobalNews.apk"> ![ic_launcher](https://github.com/user-attachments/assets/114d981d-013a-41ea-b7cd-a112c691e804)</a>
+Click on a logo to download the latest version of the app apk file:
+
+  <a href="https://github.com/ArpitAswal/Global-News/releases/download/v1.0.0/GlobalNewsApp.apk"> ![ic_launcher](https://github.com/user-attachments/assets/114d981d-013a-41ea-b7cd-a112c691e804)</a>
 
 ## Project Title: Global News 
 
