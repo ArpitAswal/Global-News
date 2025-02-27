@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:global_news/utils/navigation_routes/app_routes.dart';
+import 'package:global_news/utils/navigation_routes/routes_observer.dart';
 
 void main() {
   runApp(MyApp());
@@ -21,6 +22,7 @@ class MyApp extends StatelessWidget {
             primarySwatch: Colors.blue,
             colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple)),
         initialRoute: '/splash_screen',
+        navigatorObservers: [RoutesObserver()],
         getPages: AppRoutes.routes);
   }
 }

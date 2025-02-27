@@ -1,9 +1,9 @@
 import 'package:get/get.dart';
 
 import '../../bindings/categories_binding.dart';
-import '../../bindings/home_binding.dart';
-import '../../view/categories/categories_screen.dart';
-import '../../view/home/home_screen.dart';
+import '../../bindings/headlines_binding.dart';
+import '../../view/all_news_views/categories_screen.dart';
+import '../../view/all_news_views/headlines_news_screen.dart';
 import '../../view/splash_screen.dart';
 
 
@@ -13,13 +13,13 @@ class AppRoutes {
     GetPage(
         name: SplashScreen.screenRouteName, page: () => const SplashScreen()),
     GetPage(
-        name: HomeScreen.screenRouteName,
-        page: () => HomeScreen(),
-        binding: HomeBinding(),
+        name: HeadlinesNewsScreen.screenRouteName,
+        page: () => HeadlinesNewsScreen(),
+        binding: HeadlinesBinding(),
         transition: Transition.fadeIn),
     GetPage(
-        name: CategoriesScreen.screenRouteName,
-        page: () => CategoriesScreen(),
+        name: NewsCategoryScreen.screenRouteName,
+        page: () => NewsCategoryScreen(),
         binding: CategoriesBinding(),
         transition: Transition.leftToRight),
   ];

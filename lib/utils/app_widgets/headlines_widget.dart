@@ -2,11 +2,10 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:global_news/controllers/home_controller.dart';
 import 'package:global_news/utils/animation/custom_recttween.dart';
-import 'package:global_news/utils/app_widgets/message_widgets.dart';
+import 'package:global_news/utils/app_widgets/alert_notify_widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../news_detail_screen.dart';
-import '../home_screen.dart';
+import '../../view/all_news_views/news_detail_screen.dart';
 
 class HeadlinesWidget extends StatelessWidget {
   final String dateAndTime;
@@ -25,13 +24,19 @@ class HeadlinesWidget extends StatelessWidget {
 
     return InkWell(
       onTap: () {
-        Navigator.push(context, PageRouteBuilder(
-            transitionDuration: Duration(milliseconds: 600),
-            reverseTransitionDuration: Duration(milliseconds: 600),
-            pageBuilder: (_, __, ___) => NewsDetailScreen(article: controller.headlinesData.value!.articles[index], newsType: "Headlines", index: index,)));
+        Navigator.push(
+            context,
+            PageRouteBuilder(
+                transitionDuration: Duration(milliseconds: 600),
+                reverseTransitionDuration: Duration(milliseconds: 600),
+                pageBuilder: (_, __, ___) => NewsDetailScreen(
+                      article: controller.headlinesData[index],
+                      newsType: "Headlines",
+                      index: index,
+                    )));
       },
       child: Hero(
-        tag: "${controller.headlinesData.value!.articles[index].title},$index",
+        tag: "${controller.headlinesData[index].title},$index",
         transitionOnUserGestures: true,
         createRectTween: (Rect? begin, Rect? end) {
           return CustomRectTween(begin: begin, end: end);
@@ -40,7 +45,7 @@ class HeadlinesWidget extends StatelessWidget {
             height: height * .4,
             width: width * .75,
             padding: EdgeInsets.zero,
-            margin: const EdgeInsets.symmetric(vertical: 5.0),
+            margin: const EdgeInsets.symmetric(vertical: 10.0),
             child: Stack(
               alignment: Alignment.topCenter,
               children: [
@@ -56,14 +61,13 @@ class HeadlinesWidget extends StatelessWidget {
                     borderRadius: BorderRadius.circular(16.0),
                     child: CachedNetworkImage(
                         fit: BoxFit.cover,
-                        imageUrl: controller.headlinesData.value!
-                                .articles[index].urlToImage ??
-                            '',
+                        imageUrl:
+                            controller.headlinesData[index].urlToImage ?? '',
                         placeholder: (context, url) => Container(
-                              child: spinKit,
+                              child: AlertNotifyWidgets().dataLoading(),
                             ),
                         errorWidget: (context, url, error) =>
-                            MessageWidgets.imageError()),
+                            AlertNotifyWidgets().imageError()),
                   ),
                 ),
                 Positioned(
@@ -84,9 +88,7 @@ class HeadlinesWidget extends StatelessWidget {
                         children: [
                           Expanded(
                             child: Text(
-                              controller.headlinesData.value!.articles[index]
-                                      .title ??
-                                  '',
+                              controller.headlinesData[index].title ?? '',
                               softWrap: true,
                               textAlign: TextAlign.start,
                               maxLines: 3,
@@ -102,8 +104,8 @@ class HeadlinesWidget extends StatelessWidget {
                             children: [
                               Expanded(
                                 child: Text(
-                                  controller.headlinesData.value!
-                                          .articles[index].source!.name ??
+                                  controller
+                                          .headlinesData[index].source!.name ??
                                       '',
                                   overflow: TextOverflow.ellipsis,
                                   style: GoogleFonts.poppins(

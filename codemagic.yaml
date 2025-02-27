@@ -1,0 +1,25 @@
+workflows:
+  flutter-workflow:
+    name: Flutter Workflow
+    environment:
+      flutter: stable
+      vars:
+        NEWS_API_KEY: $NEWS_API_KEY
+        GEMINI_KEY: $GEMINI_KEY
+      android_signing:
+        - GlobalNews_Keystore
+    scripts:
+      - name: Verify Dart Defines
+        script: |
+          echo "NEWS_API_KEY (Codemagic): ${NEWS_API_KEY}"
+          echo "GEMINI_KEY (Codemagic): ${GEMINI_KEY}"
+
+      - name: Debug Environment Variables
+        script: |
+          echo "Checking Codemagic Environment Variables..."
+          echo "NEWS_API_KEY: ${NEWS_API_KEY}"
+          echo "GEMINI_KEY: ${GEMINI_KEY}"
+
+      - name: Build Flutter APK
+        script: |
+            flutter build apk --dart-define=NEWS_API_KEY="$NEWS_API_KEY" --dart-define=GEMINI_KEY="$GEMINI_KEY"
